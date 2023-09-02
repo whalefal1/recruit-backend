@@ -6,7 +6,7 @@ import com.yundingshuyuan.recruit.api.RegisterInfoService;
 import com.yundingshuyuan.recruit.dao.RegisterInfoMapper;
 import com.yundingshuyuan.recruit.domain.ApplicationPhoto;
 import com.yundingshuyuan.recruit.domain.RegisterInfo;
-import com.yundingshuyuan.recruit.domain.vo.RegisterInfoVO;
+import com.yundingshuyuan.recruit.domain.vo.RegisterInfoVo;
 import com.yundingshuyuan.recruit.utils.FileUploadUtils;
 import io.github.linpeilie.Converter;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ public class RegisterInfoImpl implements RegisterInfoService {
     private ApplicationPhotoService applicationPhotoService;
 
     @Override
-    public boolean saveRegisterInfo(RegisterInfoVO registerInfoVO) {
+    public boolean saveRegisterInfo(RegisterInfoVo registerInfoVO) {
         if (isExist(registerInfoVO)) {
             updateRegisterInfo(registerInfoVO);
             return false;
@@ -43,7 +43,7 @@ public class RegisterInfoImpl implements RegisterInfoService {
     }
 
     @Override
-    public boolean updateRegisterInfo(RegisterInfoVO registerInfoVO) {
+    public boolean updateRegisterInfo(RegisterInfoVo registerInfoVO) {
         RegisterInfo registerInfo = converter.convert(registerInfoVO, RegisterInfo.class);
         LambdaQueryWrapper<RegisterInfo> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(RegisterInfo::getUserId, registerInfo.getUserId());
@@ -67,7 +67,7 @@ public class RegisterInfoImpl implements RegisterInfoService {
         return null;
     }
 
-    public boolean isExist(RegisterInfoVO registerInfoVO) {
+    public boolean isExist(RegisterInfoVo registerInfoVO) {
         LambdaQueryWrapper<RegisterInfo> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(RegisterInfo::getUserId, registerInfoVO.getUserId());
         RegisterInfo registerInfo = registerInfoMapper.selectOne(queryWrapper);

@@ -1,9 +1,7 @@
 package com.yundingshuyuan.recruit.web.controller;
 
-import cn.hutool.json.JSON;
-import cn.hutool.json.JSONUtil;
 import com.yundingshuyuan.recruit.api.UserInfoService;
-import com.yundingshuyuan.recruit.domain.vo.UserInfoVO;
+import com.yundingshuyuan.recruit.domain.vo.UserInfoVo;
 import com.yundingshuyuan.recruit.web.annotation.RecruitResult;
 import com.yundingshuyuan.vo.BasicResultVO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,7 +22,7 @@ public class UserInfoController {
 
     @GetMapping("/show")
     @Operation(summary = "展示用户信息")
-    public UserInfoVO show(@RequestParam("cloudId") String cloudId) {
+    public UserInfoVo show(@RequestParam("cloudId") String cloudId) {
         log.info("{}", cloudId);
         Integer integer1 = Integer.valueOf(cloudId);
         return userInfoService.showUserInfo(integer1);
@@ -32,9 +30,9 @@ public class UserInfoController {
 
     @PostMapping("/save")
     @Operation(summary = "保存用户信息")
-    public BasicResultVO save(@RequestBody String json) {
-        JSON parse = JSONUtil.parse(json);
-        UserInfoVO userInfoVO = parse.toBean(UserInfoVO.class);
+    public BasicResultVO save(@RequestBody UserInfoVo userInfoVO) {
+//        JSON parse = JSONUtil.parse(json);
+//        UserInfoVo userInfoVO = parse.toBean(UserInfoVo.class);
         if (userInfoService.saveUserInfo(userInfoVO)) {
             return BasicResultVO.success("保存成功");
         }

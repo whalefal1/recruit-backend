@@ -8,8 +8,9 @@ import com.yundingshuyuan.recruit.api.UserInfoService;
 import com.yundingshuyuan.recruit.dao.UserInfoMapper;
 import com.yundingshuyuan.recruit.domain.Academy;
 import com.yundingshuyuan.recruit.domain.UserInfo;
-import com.yundingshuyuan.recruit.domain.vo.RegisterInfoVO;
-import com.yundingshuyuan.recruit.domain.vo.UserInfoVO;
+import com.yundingshuyuan.recruit.domain.vo.RegisterInfoVo;
+import com.yundingshuyuan.recruit.domain.vo.UserInfoVo;
+import com.yundingshuyuan.recruit.exception.AdminException;
 import com.yundingshuyuan.recruit.service.verify.AbstractUserInfoValidation;
 import com.yundingshuyuan.recruit.service.verify.EmailValidation;
 import com.yundingshuyuan.recruit.service.verify.PhoneValidation;
@@ -20,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 @Service
 @Slf4j
@@ -39,7 +41,7 @@ public class UserInfoImpl implements UserInfoService {
 
     @Override
     @Transactional
-    public UserInfoVO showUserInfo(Integer cloudId) {
+    public UserInfoVo showUserInfo(Integer cloudId) {
         LambdaQueryWrapper<UserInfo> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(UserInfo::getCloudId, cloudId);
         //根据id查询用户信息，但此时用户信息不包含学校和书院，只有书院id
@@ -48,7 +50,7 @@ public class UserInfoImpl implements UserInfoService {
         Academy academy = academyService.getById(userInfo.getAcademyId());
         //user_info中不包含学校和书院的名称，需要在user_infoVO中添加school和academy
         //先转型，再赋值
-        UserInfoVO userInfoVO = converter.convert(userInfo, UserInfoVO.class);
+        UserInfoVo userInfoVO = converter.convert(userInfo, UserInfoVo.class);
         userInfoVO.setAcademy(academy.getAcademy());
         userInfoVO.setSchool(academy.getSchool());
         return userInfoVO;
@@ -56,7 +58,31 @@ public class UserInfoImpl implements UserInfoService {
 
 
     @Override
-    public boolean updateUserInfo(UserInfoVO userInfoVO) {
+    @Transactional
+    public boolean saveUserInfo(UserInfoVo userInfoVO) {
+        UserInfo userInfo = converter.convert(userInfoVO, UserInfo.class);
+        userInfo.setIsAdmin(0);
+        try {
+            commonValidation(userInfo);
+        } catch (AdminException e) {
+            log.info("小程序管理员登录");
+            userInfo.setIsAdmin(1);
+            return true;
+        } finally {
+            Integer integer = academyConvert(userInfoVO.getAcademy());
+            userInfo.setAcademyId(integer);
+            if (checkUserInfo(userInfoVO)) {
+                userMapper.insert(userInfo);
+                registerInfoService.saveRegisterInfo(new RegisterInfoVo(userInfo.getCloudId(), userInfo.getDirection()));
+                return true;
+            }
+            updateUserInfo(userInfoVO);
+            return true;
+        }
+    }
+
+    @Override
+    public boolean updateUserInfo(UserInfoVo userInfoVO) {
         UserInfo userInfo = converter.convert(userInfoVO, UserInfo.class);
         commonValidation(userInfo);
         Integer integer = academyConvert(userInfoVO.getAcademy());
@@ -65,6 +91,7 @@ public class UserInfoImpl implements UserInfoService {
         boolean update = updateWrapper.eq(UserInfo::getCloudId, userInfo.getCloudId())
                 .set(userInfo.getAcademyId() != null, UserInfo::getAcademyId, userInfo.getAcademyId())
                 .set(!userInfo.getEmail().isEmpty(), UserInfo::getEmail, userInfo.getEmail())
+                .set(!userInfo.getStudentNumber().isEmpty(), UserInfo::getStudentNumber, userInfo.getStudentNumber())
                 .set(!userInfo.getGender().isEmpty(), UserInfo::getGender, userInfo.getGender())
                 .set(!userInfo.getMajor().isEmpty(), UserInfo::getMajor, userInfo.getMajor())
                 .set(!userInfo.getName().isEmpty(), UserInfo::getName, userInfo.getName())
@@ -75,23 +102,7 @@ public class UserInfoImpl implements UserInfoService {
         return update;
     }
 
-    @Override
-    @Transactional
-    public boolean saveUserInfo(UserInfoVO userInfoVO) {
-        UserInfo userInfo = converter.convert(userInfoVO, UserInfo.class);
-        commonValidation(userInfo);
-        Integer integer = academyConvert(userInfoVO.getAcademy());
-        userInfo.setAcademyId(integer);
-        if (checkUserInfo(userInfoVO)) {
-            userMapper.insert(userInfo);
-            registerInfoService.saveRegisterInfo(new RegisterInfoVO(userInfo.getCloudId(), userInfo.getDirection()));
-            return true;
-        }
-        updateUserInfo(userInfoVO);
-        return true;
-    }
-
-    public boolean checkUserInfo(UserInfoVO userInfoVO) {
+    public boolean checkUserInfo(UserInfoVo userInfoVO) {
         UserInfo userInfo = converter.convert(userInfoVO, UserInfo.class);
         LambdaQueryWrapper<UserInfo> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(UserInfo::getCloudId, userInfo.getCloudId());

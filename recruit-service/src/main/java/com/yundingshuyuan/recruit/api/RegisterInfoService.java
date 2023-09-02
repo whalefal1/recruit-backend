@@ -1,6 +1,6 @@
 package com.yundingshuyuan.recruit.api;
 
-import com.yundingshuyuan.recruit.domain.vo.RegisterInfoVO;
+import com.yundingshuyuan.recruit.domain.vo.RegisterInfoVo;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileNotFoundException;
@@ -14,7 +14,7 @@ public interface RegisterInfoService {
      * @author 李朋逊
      * @date 2023/08/02
      */
-    public boolean saveRegisterInfo(RegisterInfoVO registerInfoVO);
+    public boolean saveRegisterInfo(RegisterInfoVo registerInfoVO);
 
     /**
      * Description 更新注册信息
@@ -24,7 +24,7 @@ public interface RegisterInfoService {
      * @author 李朋逊
      * @date 2023/08/02
      */
-    public boolean updateRegisterInfo(RegisterInfoVO registerInfoVO);
+    public boolean updateRegisterInfo(RegisterInfoVo registerInfoVO);
 
 
     /**

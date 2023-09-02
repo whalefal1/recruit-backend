@@ -1,7 +1,6 @@
 package com.yundingshuyuan.recruit.domain.vo;
 
-
-import com.yundingshuyuan.recruit.domain.RegisterInfo;
+import com.yundingshuyuan.recruit.domain.ApplicationPhoto;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,8 +11,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@AutoMapper(target = RegisterInfo.class)
-public class RegisterInfoVO {
-    private Integer userId;
-    private String direction;
+@AutoMapper(target = ApplicationPhoto.class)
+public class ApplicationPhotoVo {
+
+    private Integer id;
+    private String url;
+    private Integer user_id;
 }
